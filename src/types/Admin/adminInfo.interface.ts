@@ -5,4 +5,5 @@ export interface AdminInfo {
   loginPwd: string;
   avatar?: string;
   permission: number;
+  enabled: number;
 }

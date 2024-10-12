@@ -1,3 +1,5 @@
+// import { AUTHORIZATION } from '@/constants/localStorage.constant';
+import { AdminModelState } from '@/models/adminModel';
 import { AdminInfo } from '@/types/Admin/adminInfo.interface';
 import {
   PageContainer,
@@ -5,14 +7,17 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useDispatch, useSelector } from '@umijs/max';
-import { Tag } from 'antd';
+import { Button, Switch, Tag } from 'antd';
 import { useEffect } from 'react';
 
 function Admin() {
   const dispatch = useDispatch();
 
   // 从仓库获取管理员数据
-  const { adminList } = useSelector((state) => state.admin);
+  const { adminList } = useSelector<any, AdminModelState>(
+    (state) => state.admin,
+  );
+  // const isLogin = localStorage.getItem(AUTHORIZATION);
 
   useEffect(() => {
     dispatch({
@@ -21,7 +26,7 @@ function Admin() {
   }, []);
 
   // 对应表格每一列
-  const columns: ProColumnType[] = [
+  const columns: ProColumnType<AdminInfo>[] = [
     {
       title: '登录账号',
       dataIndex: 'loginId',
@@ -53,9 +58,50 @@ function Admin() {
       key: 'permission',
       align: 'center',
       render: (_, row: AdminInfo) => {
-        let tag =
-          row.permission === 1 ? <Tag>超级管理员</Tag> : <Tag>普通管理员</Tag>;
+        // return [
+        //   <Tag color="red" key={row._id}>
+        //     -
+        //   </Tag>,
+        // ];
+        const tag =
+          row.permission === 1 ? (
+            <Tag key={row.id}>超级管理员</Tag>
+          ) : (
+            <Tag key={row.id}>普通管理员</Tag>
+          );
         return [tag];
+      },
+    },
+    {
+      title: '账号状态',
+      dataIndex: 'enabled',
+      key: 'enabled',
+      align: 'center',
+      render: (_, row: AdminInfo) => (
+        <Switch
+          key={row.id}
+          size={'small'}
+          defaultChecked={!!row.enabled}
+          onChange={() => {}}
+        />
+      ),
+    },
+    {
+      title: '操作',
+      width: 150,
+      key: 'option',
+      align: 'center',
+      render: (_, row: AdminInfo) => {
+        return (
+          <div key={row.id}>
+            <Button type="link" size="small">
+              编辑
+            </Button>
+            <Button type="link" size="small">
+              删除
+            </Button>
+          </div>
+        );
       },
     },
   ];
