@@ -7,7 +7,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useDispatch, useSelector } from '@umijs/max';
-import { Button, Switch, Tag } from 'antd';
+import { Button, Switch, TablePaginationConfig, Tag } from 'antd';
 import { useEffect } from 'react';
 
 function Admin() {
@@ -20,10 +20,12 @@ function Admin() {
   // const isLogin = localStorage.getItem(AUTHORIZATION);
 
   useEffect(() => {
-    dispatch({
-      type: 'admin/_initAdminList',
-    });
-  }, []);
+    if (!adminList.length) {
+      dispatch({
+        type: 'admin/_initAdminList',
+      });
+    }
+  }, [adminList]);
 
   // 对应表格每一列
   const columns: ProColumnType<AdminInfo>[] = [
@@ -106,6 +108,10 @@ function Admin() {
     },
   ];
 
+  const pagination: TablePaginationConfig = {
+    pageSize: 5,
+  };
+
   return (
     <div>
       <PageContainer>
@@ -114,6 +120,8 @@ function Admin() {
           dataSource={adminList}
           rowKey={(row) => row.id}
           columns={columns}
+          search={false}
+          pagination={pagination}
         />
       </PageContainer>
     </div>
