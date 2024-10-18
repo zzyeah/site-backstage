@@ -14,6 +14,13 @@ function getAdmin(params: any): Promise<AdminInfo> {
   });
 }
 
+function deleteAdmin(params: string){
+  return apiCall('/api/admin', {
+    method: 'DELETE',
+    params,
+  });
+}
+
 function login(data: LoginRequest): Promise<DefaultResponse<LoginResponse>> {
   return apiCall('/api/admin/login', {
     method: 'POST',
@@ -28,6 +35,7 @@ function captcha() {
 
 export default {
   getAdmin,
+  deleteAdmin,
   captcha,
   login,
 };

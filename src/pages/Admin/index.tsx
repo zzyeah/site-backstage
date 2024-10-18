@@ -7,7 +7,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useDispatch, useSelector } from '@umijs/max';
-import { Button, Switch, TablePaginationConfig, Tag } from 'antd';
+import { Button, message, Popconfirm, Switch, TablePaginationConfig, Tag } from 'antd';
 import { useEffect } from 'react';
 
 function Admin() {
@@ -26,6 +26,12 @@ function Admin() {
       });
     }
   }, [adminList]);
+
+  const deleteHandle = (row: AdminInfo) => {
+    // 需要判断是否是当前登陆的用户
+    dispatch({type: 'admin/_deleteAdmin', payload: row})
+    message.success('删除管理员成功');
+  };
 
   // 对应表格每一列
   const columns: ProColumnType<AdminInfo>[] = [
@@ -99,9 +105,16 @@ function Admin() {
             <Button type="link" size="small">
               编辑
             </Button>
-            <Button type="link" size="small">
-              删除
-            </Button>
+            <Popconfirm
+              title="是否确定删除此管理员"
+              onConfirm={() => deleteHandle(row)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="link" size="small">
+                删除
+              </Button>
+            </Popconfirm>
           </div>
         );
       },
