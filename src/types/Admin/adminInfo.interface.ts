@@ -6,4 +6,5 @@ export interface AdminInfo {
   avatar?: string;
   permission: number;
   enabled: number;
+  [key: string]: any;
 }

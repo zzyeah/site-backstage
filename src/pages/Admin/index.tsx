@@ -1,5 +1,6 @@
 // import { AUTHORIZATION } from '@/constants/localStorage.constant';
 import { AdminModelState } from '@/models/adminModel';
+import { AdminFormActionType } from '@/types';
 import { AdminInfo } from '@/types/Admin/adminInfo.interface';
 import {
   PageContainer,
@@ -7,15 +8,26 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useDispatch, useSelector } from '@umijs/max';
-import { Button, message, Popconfirm, Switch, TablePaginationConfig, Tag } from 'antd';
-import { useEffect } from 'react';
+import {
+  Button,
+  message,
+  Modal,
+  Popconfirm,
+  Switch,
+  TablePaginationConfig,
+  Tag,
+} from 'antd';
+import { useEffect, useState } from 'react';
+import AdminForm from './components/adminForm';
 
 function Admin() {
   const dispatch = useDispatch();
-
+  // 控制修改面包开启的状态
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [adminInfo, setAdminInfo] = useState<Partial<AdminInfo> | null>(null);
   // 从仓库获取管理员数据
   const { adminList } = useSelector<any, AdminModelState>(
-    (state) => state.admin,
+    (state: { admin: AdminModelState }) => state.admin,
   );
   // const isLogin = localStorage.getItem(AUTHORIZATION);
 
@@ -27,10 +39,54 @@ function Admin() {
     }
   }, [adminList]);
 
+  /**
+   * 打开修改面板
+   */
+  function showModal(row: AdminInfo) {
+    setIsModalOpen(true);
+    setAdminInfo(row);
+  }
+
+  /**
+   * 点击修改面包确定按钮时的回调
+   */
+  const handleOk = () => {
+    dispatch({
+      type: 'admin/_editAdmin',
+      payload: {
+        adminInfo,
+        newAdminInfo: adminInfo,
+      },
+    });
+    message.success('修改管理员信息成功');
+    setIsModalOpen(false);
+  };
+
+  /**
+   * 点击修改面板取消按钮时关闭该面板
+   */
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setAdminInfo(null);
+  };
   const deleteHandle = (row: AdminInfo) => {
     // 需要判断是否是当前登陆的用户
-    dispatch({type: 'admin/_deleteAdmin', payload: row})
+    dispatch({ type: 'admin/_deleteAdmin', payload: row });
     message.success('删除管理员成功');
+  };
+
+  const switchChange = (adminInfo: AdminInfo, isSelected: boolean) => {
+    dispatch({
+      type: 'admin/_editAdmin',
+      payload: {
+        adminInfo,
+        newAdminInfo: {
+          enabled: isSelected ? 1 : 0,
+        },
+      },
+    });
+    if (isSelected) message.success('管理员状态已激活');
+    else message.success('管理员状态已禁用');
   };
 
   // 对应表格每一列
@@ -90,7 +146,7 @@ function Admin() {
           key={row.id}
           size={'small'}
           defaultChecked={!!row.enabled}
-          onChange={() => {}}
+          onChange={(isSelected: boolean) => switchChange(row, isSelected)}
         />
       ),
     },
@@ -102,7 +158,7 @@ function Admin() {
       render: (_, row: AdminInfo) => {
         return (
           <div key={row.id}>
-            <Button type="link" size="small">
+            <Button type="link" size="small" onClick={() => showModal(row)}>
               编辑
             </Button>
             <Popconfirm
@@ -137,6 +193,20 @@ function Admin() {
           pagination={pagination}
         />
       </PageContainer>
+      <Modal
+        title="修改管理员信息"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        style={{ top: '50px' }}
+      >
+        <AdminForm
+          type={AdminFormActionType.edit}
+          adminInfo={adminInfo!}
+          setAdminInfo={setAdminInfo}
+          submitHandle={handleOk}
+        />
+      </Modal>
     </div>
   );
 }

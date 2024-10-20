@@ -1,7 +1,7 @@
 import AdminController from '@/services/AdminController';
 import { AdminInfo } from '@/types/Admin/adminInfo.interface';
-import { AnyAction, Effect, Reducer } from '@umijs/max';
-import { Model } from 'dva';
+import { Effect, Model } from 'dva';
+import { AnyAction, Reducer } from 'redux';
 
 export const namespace = 'admin';
 
@@ -15,14 +15,21 @@ export interface DeleteAdminAction extends AnyAction {
 }
 
 export interface AdminModelType extends Model {
+  namespace: string;
   state: AdminModelState;
+  reducers: {
+    initAdminList: Reducer<AdminModelState>;
+    deleteAdmin: Reducer<AdminModelState>;
+    updateAdmin: Reducer<AdminModelState>;
+    addAdmin: Reducer<AdminModelState>;
+    [reducerName: string]: Reducer<AdminModelState>;
+  };
   effects: {
     _initAdminList: Effect;
     _deleteAdmin: Effect;
-  };
-  reducers: {
-    initAdminList: Reducer<AdminModelState>;
-    deleteAdminList: Reducer<AdminModelState>;
+    _editAdmin: Effect;
+    _addAdmin: Effect;
+    [effectName: string]: Effect;
   };
 }
 
@@ -36,15 +43,39 @@ const AdminModel: AdminModelType = {
   reducers: {
     initAdminList(state, { payload }) {
       console.log(payload);
-      const newState = { ...state };
+      const newState = { ...state! };
       newState.adminList = payload;
       return newState;
     },
-    deleteAdminList(state, { payload }) {
-      const newState = { ...state };
+    deleteAdmin(state, { payload }) {
+      const newState = { ...state! };
       const index = newState.adminList.indexOf(payload);
-      const arr = {...newState.adminList};
+      const arr = [...newState.adminList];
       arr.splice(index, 1);
+      newState.adminList = arr;
+      return newState;
+    },
+    // 更新管理员信息
+    updateAdmin(state, { payload }) {
+      const newState = { ...state! };
+      for (const admin of newState.adminList) {
+        if (admin.id === payload.adminInfo.id) {
+          const { newAdminInfo }: { newAdminInfo: AdminInfo } = payload;
+          for (const key in newAdminInfo) {
+            if (Object.prototype.hasOwnProperty.call(newAdminInfo, key)) {
+              const newAdmin = newAdminInfo[key];
+              admin[key] = newAdmin;
+            }
+          }
+          break;
+        }
+      }
+      return newState;
+    },
+    addAdmin(state, { payload }) {
+      const newState = { ...state! };
+      const arr = [...newState.adminList];
+      arr.push(payload);
       newState.adminList = arr;
       return newState;
     },
@@ -68,7 +99,19 @@ const AdminModel: AdminModelType = {
       // 和服务器进行通信, 删除服务器数据
       yield call(AdminController.deleteAdmin, payload.id);
       // 更新本地仓库
-      yield put({ type: 'deleteAdminList', payload });
+      yield put({ type: 'deleteAdmin', payload });
+    },
+    *_editAdmin({ payload }, { put, call }): Generator {
+      yield call(
+        AdminController.editAdmin,
+        payload.adminInfo.id,
+        payload.newAdminInfo,
+      );
+      yield put({ type: 'updateAdmin', payload });
+    },
+    *_addAdmin({ payload }, { put, call }): Generator {
+      const result = yield call(AdminController.addAdmin, payload);
+      yield put({ type: 'AddAdmin', payload: result });
     },
   },
 };

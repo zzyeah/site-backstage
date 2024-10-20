@@ -75,6 +75,7 @@ function Login() {
       } else {
         // 账号密码正确, 账号可用
         // 跳转到后台管理系统的首页
+        location.href = '/';
       }
     } else {
       afterLoginError(res.msg);
