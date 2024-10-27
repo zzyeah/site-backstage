@@ -1,3 +1,5 @@
+import '@toast-ui/editor/dist/toastui-editor.css';
+
 import { BlogFormActionType, BlogInfo } from '@/types';
 import typeOptionCreator from '@/utils/typeOptions';
 import { PlusOutlined } from '@ant-design/icons';
@@ -28,16 +30,16 @@ function BlogForm({
     formRef.setFieldsValue(blogInfo);
   }
   const [firstIn, setFirstIn] = useState(true); // 记录是否是第一次进入
-  const editorRef = useRef(); // 关联 markdown 编辑器
+  const editorRef = useRef<Editor>(); // 关联 markdown 编辑器
   const dispatch = useDispatch();
 
   // 从仓库获取所有的分类
-  const { typeList } = useSelector((state) => state.type);
+  const { typeList } = useSelector((state) => state.blogType);
 
   useEffect(() => {
     if (!typeList.length) {
       dispatch({
-        type: 'type/_initTypeList',
+        type: 'blogType/_initTypeList',
       });
     }
   }, []);
@@ -47,14 +49,14 @@ function BlogForm({
   let blogPicPreview = null;
   if (type === BlogFormActionType.edit) {
     blogPicPreview = (
-      <Form.Item label="当前封面" name="bookPicPreview">
+      <Form.Item label="当前封面" name="blogPicPreview">
         <Image src={blogInfo?.thumb} width={100} />
       </Form.Item>
     );
   }
 
   /**
-   * 用户在填写表单信息的时候，实时的修改 bookInfo 状态
+   * 用户在填写表单信息的时候，实时的修改 blogInfo 状态
    * @param {*} newContent
    * @param {*} key
    */
@@ -64,12 +66,19 @@ function BlogForm({
     setBlogInfo(newBookInfo);
   }
 
+  /**
+   * 分类下拉列表改变时对应的回调
+   */
+  function handleTypeChange(value) {
+    updateInfo(value, 'categoryId');
+  }
+
   // 这里需要注意的就是关于有 markdown 编辑器时数据的回填
   useEffect(() => {
     if (formRef && firstIn && blogInfo && editorRef) {
       formRef.setFieldsValue(blogInfo);
       // 关键就是关于编辑器的回填
-      editorRef.current.getInstance().setHTML(blogInfo?.htmlContent);
+      editorRef.current!.getInstance().setHTML(blogInfo?.htmlContent);
       // 将 firstIn 设置为 false
       setFirstIn(false);
     }
@@ -131,7 +140,7 @@ function BlogForm({
         rules={[{ required: true, message: '请选择博客分类' }]}
       >
         <Select style={{ width: 200 }} onChange={handleTypeChange}>
-          {typeOptionCreator(Select, typeList)}
+          {typeOptionCreator({ Select, typeList })}
         </Select>
       </Form.Item>
 

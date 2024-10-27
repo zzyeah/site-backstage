@@ -60,7 +60,7 @@ export default defineConfig({
           component: './User',
           path: 'userList',
           access: 'NormalAdmin',
-        }
+        },
       ],
     },
     {
@@ -138,5 +138,8 @@ export default defineConfig({
       target: 'http://localhost:4015',
       changeOrigin: true,
     },
+  },
+  cssLoaderModules: {
+    localIdentName: '[local]',
   },
 });

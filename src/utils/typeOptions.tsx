@@ -4,7 +4,7 @@ function typeOptionCreator({
   Select,
   typeList,
 }: {
-  Select: any;
+  Select: any
   typeList: BlogTypeInfo[];
 }) {
   let optionContainer = [];
