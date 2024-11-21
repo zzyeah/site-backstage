@@ -5,6 +5,8 @@ export interface BlogInfo {
   thumb: string;
   scanNumber: number;
   commentNumber: number;
-  createDate: string;
+  createDate: number;
+  toc?: any[];
   categoryId?: number;
+  markdownContent?: string;
 }

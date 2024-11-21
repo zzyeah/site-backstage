@@ -1,7 +1,7 @@
 // 运行时配置
 
-import { message } from "antd";
-import { AdminController } from "./services";
+import { message } from 'antd';
+import { AdminController } from './services';
 
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
 // 更多信息见文档：https://umijs.org/docs/api/runtime-config#getinitialstate
@@ -12,7 +12,12 @@ export async function getInitialState() {
     const token = localStorage.getItem('adminToken'); // 获取本地 token
     if (token) {
       // 说明本地有 token，接下来还需要验证 token 的有效性
-      const result = await AdminController.getInfo();
+      let result;
+      try {
+        result = await AdminController.getInfo();
+      } catch (error) {
+        console.log(error);
+      }
       if (result.data) {
         // 说明不仅有 token，而且该 token 还是有效的
         // 那么就不允许跳转
@@ -23,7 +28,12 @@ export async function getInitialState() {
   } else {
     // 说明是要强行跳内部页面
     // 需要进行 token 的有效性验证
-    const result = await AdminController.getInfo();
+    let result;
+    try {
+      result = await AdminController.getInfo();
+    } catch (error) {
+      console.log(error);
+    }
     if (result.data) {
       const { data } = await AdminController.getAdminById(result.data.id);
       return {

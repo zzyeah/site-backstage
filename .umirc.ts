@@ -81,6 +81,12 @@ export default defineConfig({
           path: 'blogList',
           access: 'NormalAdmin',
         },
+        {
+          name: '编辑博客',
+          component: './Blog/editBlog',
+          path: 'editBook/:id',
+          access: 'NormalAdmin',
+        },
       ],
     },
     {

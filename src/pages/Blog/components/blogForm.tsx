@@ -1,5 +1,6 @@
 import '@toast-ui/editor/dist/toastui-editor.css';
 
+import { blogTypeModelNamespace, BlogTypeState } from '@/models/blogTypeModel';
 import { BlogFormActionType, BlogInfo } from '@/types';
 import typeOptionCreator from '@/utils/typeOptions';
 import { PlusOutlined } from '@ant-design/icons';
@@ -7,16 +8,25 @@ import { Editor } from '@toast-ui/react-editor';
 import { useDispatch, useSelector } from '@umijs/max';
 import { Button, Form, Image, Input, Select, Upload } from 'antd';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { AddBlogCompBlogInfo } from '../addBlog';
 
-type SetBlogInfo<T = BlogFormActionType.add> = T extends BlogFormActionType.add
-  ? (adminInfo: Partial<BlogInfo>) => any
-  : Dispatch<SetStateAction<Partial<BlogInfo>>>;
+type BlogInfoProps<T extends BlogFormActionType = BlogFormActionType.add> =
+  T extends BlogFormActionType.add ? AddBlogCompBlogInfo : any;
 
-export interface BlogFormProps<T = BlogFormActionType.add> {
+type SetBlogInfo<T extends BlogFormActionType = BlogFormActionType.add> =
+  T extends BlogFormActionType.add
+    ? (adminInfo: BlogInfoProps<T>) => any
+    : Dispatch<SetStateAction<BlogInfoProps<T>>>;
+
+export interface BlogFormProps<
+  T extends BlogFormActionType = BlogFormActionType.add,
+> {
   type: BlogFormActionType;
-  blogInfo: Partial<BlogInfo>;
+  blogInfo: AddBlogCompBlogInfo;
   setBlogInfo: SetBlogInfo<T>;
-  submitHandle: () => any;
+  submitHandle: (
+    data: Pick<BlogInfo, 'htmlContent' | 'markdownContent'>,
+  ) => any;
 }
 
 function BlogForm({
@@ -30,21 +40,26 @@ function BlogForm({
     formRef.setFieldsValue(blogInfo);
   }
   const [firstIn, setFirstIn] = useState(true); // 记录是否是第一次进入
-  const editorRef = useRef<Editor>(); // 关联 markdown 编辑器
+  const editorRef = useRef<Editor>(null); // 关联 markdown 编辑器
   const dispatch = useDispatch();
 
   // 从仓库获取所有的分类
-  const { typeList } = useSelector((state) => state.blogType);
+  const { typeList } = useSelector<any, BlogTypeState>(
+    (state) => state.blogType,
+  );
 
   useEffect(() => {
     if (!typeList.length) {
       dispatch({
-        type: 'blogType/_initTypeList',
+        type: `${blogTypeModelNamespace}/_initBlogTypeList`,
       });
     }
   }, []);
   function addHandle() {
     // 获取markdown editor 的值
+    const htmlContent = editorRef.current?.getInstance().getHTML();
+    const markdownContent = editorRef.current?.getInstance().getMarkdown();
+    submitHandle({ htmlContent, markdownContent });
   }
   let blogPicPreview = null;
   if (type === BlogFormActionType.edit) {
@@ -60,16 +75,19 @@ function BlogForm({
    * @param {*} newContent
    * @param {*} key
    */
-  function updateInfo(newContent: any, key: keyof BlogInfo) {
-    const newBookInfo = { ...blogInfo };
-    newBookInfo[key] = newContent;
-    setBlogInfo(newBookInfo);
+  function updateInfo<T extends keyof BlogInfo = keyof BlogInfo>(
+    newContent: BlogInfo[T],
+    key: keyof BlogInfo,
+  ) {
+    const newBlogTypeInfo = { ...blogInfo };
+    Reflect.set(newBlogTypeInfo, key, newContent);
+    setBlogInfo(newBlogTypeInfo);
   }
 
   /**
    * 分类下拉列表改变时对应的回调
    */
-  function handleTypeChange(value) {
+  function handleTypeChange(value: number) {
     updateInfo(value, 'categoryId');
   }
 

@@ -1,8 +1,15 @@
+import { blogTypeModelNamespace, BlogTypeState } from '@/models/blogTypeModel';
 import { BlogController } from '@/services';
-import { formatDate, typeOption } from '@/utils/tools';
-import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { GetBlogByParams } from '@/types';
+import { formatDate } from '@/utils/tools';
+import typeOptionCreator from '@/utils/typeOptions';
+import {
+  ActionType,
+  PageContainer,
+  ProTable,
+} from '@ant-design/pro-components';
 import { Button, message, Popconfirm, Select, Tag } from 'antd';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'umi';
 
@@ -13,9 +20,12 @@ function Blog() {
     pageSize: 10,
   });
 
-  const { typeList } = useSelector((state) => state.type);
+  const { typeList } = useSelector<any, BlogTypeState>(
+    (state) => state.blogType,
+  );
+
   const dispatch = useDispatch(); // 获取 dispatch
-  const actionRef = useRef();
+  const actionRef = useRef<ActionType>();
   const navigate = useNavigate();
 
   // 按类型进行搜索
@@ -24,11 +34,13 @@ function Blog() {
   });
 
   // 如果类型列表为空，则初始化一次
-  if (!typeList.length) {
-    dispatch({
-      type: 'type/_initTypeList',
-    });
-  }
+  useEffect(() => {
+    if (!typeList.length) {
+      dispatch({
+        type: `${blogTypeModelNamespace}/_initBlogTypeList`,
+      });
+    }
+  }, []);
 
   function handleChange(value) {
     setSearchType({
@@ -41,7 +53,7 @@ function Blog() {
    * @param {*} page 当前页
    * @param {*} pageSize 每页条数
    */
-  function handlePageChange(current, pageSize) {
+  function handlePageChange(current, pageSize: any) {
     setPagination({
       current,
       pageSize,
@@ -50,8 +62,8 @@ function Blog() {
 
   function deleteHandle(blogInfo) {
     BlogController.deleteBlog(blogInfo.id);
-    actionRef.current.reload(); // 再次刷新请求
-    message.success('删除书籍成功');
+    actionRef.current!.reload(); // 再次刷新请求
+    message.success('删除博客成功');
   }
 
   const columns = [
@@ -65,15 +77,15 @@ function Blog() {
       },
     },
     {
-      title: '书籍名称',
-      dataIndex: 'blogTitle',
+      title: '博客名称',
+      dataIndex: 'title',
       width: 150,
-      key: 'blogTitle',
+      key: 'title',
     },
     {
-      title: '书籍分类',
-      dataIndex: 'typeId',
-      key: 'typeId',
+      title: '博客分类',
+      dataIndex: 'categoryId',
+      key: 'categoryId',
       align: 'center',
       renderFormItem: (
         item,
@@ -82,32 +94,32 @@ function Blog() {
       ) => {
         return (
           <Select placeholder="请选择查询分类" onChange={handleChange}>
-            {typeOptionCreator(Select, typeList)}
+            {typeOptionCreator({ Select, typeList })}
           </Select>
         );
       },
       render: (_, row) => {
         // 寻找对应类型的类型名称
-        const type = typeList.find((item) => item.id === row.typeId);
+        const type = typeList.find((item) => item.id === row.categoryId);
         return [
-          <Tag color="purple" key={row.typeId}>
-            {type.typeName}
+          <Tag color="purple" key={row.categoryId}>
+            {type?.name}
           </Tag>,
         ];
       },
     },
     {
-      title: '书籍简介',
-      dataIndex: 'blogIntro',
+      title: '博客简介',
+      dataIndex: 'description',
       key: 'age',
       align: 'center',
       width: 200,
       search: false,
       render: (_, row) => {
-        // 将书籍简介的文字进行简化
-        // 在表格中显示书籍简介时，过滤掉 html 标签
+        // 将博客简介的文字进行简化
+        // 在表格中显示博客简介时，过滤掉 html 标签
         let reg = /<[^<>]+>/g;
-        let brief = row.blogIntro;
+        let brief = row.description;
         brief = brief.replace(reg, '');
 
         if (brief.length > 15) {
@@ -117,9 +129,9 @@ function Blog() {
       },
     },
     {
-      title: '书籍封面',
-      dataIndex: 'blogPic',
-      key: 'blogPic',
+      title: '博客封面',
+      dataIndex: 'thumb',
+      key: 'thumb',
       valueType: 'image',
       align: 'center',
       search: false,
@@ -140,12 +152,12 @@ function Blog() {
     },
     {
       title: '上架日期',
-      dataIndex: 'onShelfDate',
-      key: 'onShelfDate',
+      dataIndex: 'createDate',
+      key: 'createDate',
       align: 'center',
       search: false,
       render: (_, row) => {
-        return [formatDate(row.onShelfDate)];
+        return [formatDate(row.createDate)];
       },
     },
     {
@@ -166,7 +178,7 @@ function Blog() {
               编辑
             </Button>
             <Popconfirm
-              title="是否要删除该书籍以及该书籍对应的评论？"
+              title="是否要删除该博客以及该博客对应的评论？"
               onConfirm={() => deleteHandle(row)}
               okText="删除"
               cancelText="取消"
@@ -183,10 +195,10 @@ function Blog() {
 
   return (
     <>
-      {/* 书籍列表 */}
+      {/* 博客列表 */}
       <PageContainer>
         <ProTable
-          headerTitle="书籍列表"
+          headerTitle="博客列表"
           actionRef={actionRef}
           columns={columns}
           rowKey={(row) => row.id}
@@ -204,14 +216,22 @@ function Blog() {
             onChange: handlePageChange,
           }}
           request={async (params) => {
-            const result = await BlogController.getBlogByPage(params);
+            const { keyword, pageSize, current } = params;
+            const request: GetBlogByParams = {
+              keyword,
+              limit: String(pageSize),
+              page: String(current),
+            };
+            const result = await BlogController.getBlogByPage(request);
+            console.log(result);
+
             return {
-              data: result.data.data,
+              data: result.data.rows,
               // success 请返回 true，
               // 不然 table 会停止解析数据，即使有数据
               success: !result.code,
               // 不传会使用 data 的长度，如果是分页一定要传
-              total: result.data.count,
+              total: result.data.total,
             };
           }}
         />

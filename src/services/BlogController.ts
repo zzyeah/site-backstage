@@ -1,11 +1,11 @@
 import { BlogInfo, GetBlogByParams } from '@/types';
-import { request } from 'umi';
+import { apiCall } from './api';
 
 /**
  * 分页获取书籍
  */
 function getBlogByPage(params: GetBlogByParams) {
-  return request('/api/blog', {
+  return apiCall('/api/blog', {
     params,
   });
 }
@@ -14,14 +14,14 @@ function getBlogByPage(params: GetBlogByParams) {
  * 根据 id 获取书籍详情
  */
 function getBlogById(blogId: string) {
-  return request(`/api/blog/${blogId}`);
+  return apiCall(`/api/blog/${blogId}`);
 }
 
 /**
  * 新增书籍
  */
-function addBlog(newBlogInfo: BlogInfo) {
-  return request('/api/blog', {
+function addBlog(newBlogInfo: Omit<BlogInfo, 'scanNumber'| 'commentNumber'>) {
+  return apiCall('/api/blog', {
     method: 'POST',
     data: newBlogInfo,
   });
@@ -32,7 +32,7 @@ function addBlog(newBlogInfo: BlogInfo) {
  */
 
 function deleteBlog(blogId: string) {
-  return request(`/api/blog/${blogId}`, {
+  return apiCall(`/api/blog/${blogId}`, {
     method: 'DELETE',
   });
 }
@@ -41,7 +41,7 @@ function deleteBlog(blogId: string) {
  * 根据 id 编辑书籍
  */
 function editBlog(blogId: string, newBlogInfo: Partial<BlogInfo>) {
-  return request(`/api/blog/${blogId}`, {
+  return apiCall(`/api/blog/${blogId}`, {
     method: 'PUT',
     data: newBlogInfo,
   });

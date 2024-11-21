@@ -1,10 +1,10 @@
-import { request } from 'umi';
+import { apiCall } from './api';
 
 /**
  * 获取类型列表
  */
 function getType() {
-  return request('/api/blogtype', {
+  return apiCall('/api/blogtype', {
     method: 'GET',
   });
 }
@@ -12,7 +12,7 @@ function getType() {
  * 获取类型列表
  */
 function getTypeById(typeId: string) {
-  return request(`/api/blogtype/${typeId}`, {
+  return apiCall(`/api/blogtype/${typeId}`, {
     method: 'GET',
   });
 }
@@ -21,7 +21,7 @@ function getTypeById(typeId: string) {
  * 新增类型
  */
 function addType(newTypeInfo: { name: string; order: number }) {
-  return request('/api/blogtype', {
+  return apiCall('/api/blogtype', {
     method: 'POST',
     data: newTypeInfo,
   });
@@ -31,7 +31,7 @@ function addType(newTypeInfo: { name: string; order: number }) {
  * 根据 id 删除类型
  */
 function deleteType(typeId: string) {
-  return request(`/api/blogtype/${typeId}`, {
+  return apiCall(`/api/blogtype/${typeId}`, {
     method: 'DELETE',
   });
 }
@@ -43,7 +43,7 @@ function editType(
   typeId: string,
   newTypeInfo: { name: string; order: number },
 ) {
-  return request(`/api/blogtype/${typeId}`, {
+  return apiCall(`/api/blogtype/${typeId}`, {
     method: 'PUT',
     data: newTypeInfo,
   });

@@ -1,9 +1,9 @@
 import AdminController from '@/services/AdminController';
 import { AdminInfo } from '@/types/Admin/adminInfo.interface';
-import { Effect, Model } from 'dva';
+import { Effect } from '@umijs/max';
 import { AnyAction, Reducer } from 'redux';
 
-export const namespace = 'admin';
+export const AdminModelNamespace = 'admin';
 
 export interface AdminModelState {
   adminList: AdminInfo[];
@@ -14,8 +14,8 @@ export interface DeleteAdminAction extends AnyAction {
   payload: AdminInfo;
 }
 
-export interface AdminModelType extends Model {
-  namespace: string;
+export interface AdminModelType {
+  namespace: typeof AdminModelNamespace;
   state: AdminModelState;
   reducers: {
     initAdminList: Reducer<AdminModelState>;
@@ -34,7 +34,7 @@ export interface AdminModelType extends Model {
 }
 
 const AdminModel: AdminModelType = {
-  namespace,
+  namespace: AdminModelNamespace,
   // 仓库数据
   state: {
     adminList: [], // 存储所有管理员信息

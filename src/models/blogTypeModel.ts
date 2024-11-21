@@ -1,8 +1,35 @@
 // 请求方法
 import BlogTypeController from '@/services/BlogTypeController';
+import { BlogTypeInfo } from '@/types';
+import { Effect, Reducer } from '@umijs/max';
 
-export default {
-  namespace: 'blogType',
+export const blogTypeModelNamespace = 'blogType';
+
+export interface BlogTypeState {
+  typeList: BlogTypeInfo[];
+}
+
+export interface BlogTypeModelType {
+  namespace: typeof blogTypeModelNamespace;
+  state: BlogTypeState;
+  reducers: {
+    initBlogTypeList: Reducer<BlogTypeState>;
+    deleteBlogType: Reducer<BlogTypeState>;
+    // updateAdmin: Reducer<BlogTypeState>;
+    addBlogType: Reducer<BlogTypeState>;
+    [reducerName: string]: Reducer<BlogTypeState>;
+  };
+  effects: {
+    _initBlogTypeList: Effect;
+    _deleteBlogType: Effect;
+    // _editAdmin: Effect;
+    _addBlogType: Effect;
+    [effectName: string]: Effect;
+  };
+}
+
+const BlogTypeModel: BlogTypeModelType = {
+  namespace: blogTypeModelNamespace,
   state: {
     typeList: [],
   },
@@ -52,3 +79,4 @@ export default {
     },
   },
 };
+export default BlogTypeModel;
