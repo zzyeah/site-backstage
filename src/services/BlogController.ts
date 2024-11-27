@@ -2,7 +2,7 @@ import { BlogInfo, GetBlogByParams } from '@/types';
 import { apiCall } from './api';
 
 /**
- * 分页获取书籍
+ * 分页获取博客
  */
 function getBlogByPage(params: GetBlogByParams) {
   return apiCall('/api/blog', {
@@ -11,14 +11,14 @@ function getBlogByPage(params: GetBlogByParams) {
 }
 
 /**
- * 根据 id 获取书籍详情
+ * 根据 id 获取博客详情
  */
 function getBlogById(blogId: string) {
   return apiCall(`/api/blog/${blogId}`);
 }
 
 /**
- * 新增书籍
+ * 新增博客
  */
 function addBlog(newBlogInfo: Omit<BlogInfo, 'scanNumber'| 'commentNumber'>) {
   return apiCall('/api/blog', {
@@ -28,7 +28,7 @@ function addBlog(newBlogInfo: Omit<BlogInfo, 'scanNumber'| 'commentNumber'>) {
 }
 
 /**
- * 根据 id 删除书籍
+ * 根据 id 删除博客
  */
 
 function deleteBlog(blogId: string) {
@@ -38,7 +38,7 @@ function deleteBlog(blogId: string) {
 }
 
 /**
- * 根据 id 编辑书籍
+ * 根据 id 编辑博客
  */
 function editBlog(blogId: string, newBlogInfo: Partial<BlogInfo>) {
   return apiCall(`/api/blog/${blogId}`, {

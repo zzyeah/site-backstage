@@ -7,7 +7,14 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Editor } from '@toast-ui/react-editor';
 import { useDispatch, useSelector } from '@umijs/max';
 import { Button, Form, Image, Input, Select, Upload } from 'antd';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import {
+  Dispatch,
+  ReactElement,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { AddBlogCompBlogInfo } from '../addBlog';
 
 type BlogInfoProps<T extends BlogFormActionType = BlogFormActionType.add> =
@@ -61,7 +68,7 @@ function BlogForm({
     const markdownContent = editorRef.current?.getInstance().getMarkdown();
     submitHandle({ htmlContent, markdownContent });
   }
-  let blogPicPreview = null;
+  let blogPicPreview: ReactElement | null = null;
   if (type === BlogFormActionType.edit) {
     blogPicPreview = (
       <Form.Item label="当前封面" name="blogPicPreview">

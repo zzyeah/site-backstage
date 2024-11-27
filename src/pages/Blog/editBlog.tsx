@@ -24,7 +24,8 @@ function EditBlog() {
     },[])
     
     function submitHandle(content: any) {
-        throw new Error('Function not implemented.');
+      console.log('submitHandle');
+      
     }
 
   return (
